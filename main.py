@@ -13,10 +13,10 @@ center = [256, 256]
 maxRadius = 256
 base_flags =   cv2.INTER_LINEAR+cv2.WARP_FILL_OUTLIERS
 
-radials = ["cv2.WARP_POLAR_LINEAR", 
-           "cv2.WARP_POLAR_LOG", 
-           "cv2.WARP_POLAR_EXP", 
-           "cv2.WARP_POLAR_SQRT", 
+radials = ["cv2.WARP_POLAR_LINEAR",
+           "cv2.WARP_POLAR_LOG",
+           "cv2.WARP_POLAR_EXP",
+           "cv2.WARP_POLAR_SQRT",
            "cv2.WARP_POLAR_SQUARE"]
 
 for i in range(5):
@@ -25,10 +25,10 @@ for i in range(5):
 
     dst = cv2.warpPolar(src, dsize, center, maxRadius, flags)
 
-    flags = base_flags+eval(radials[i]) + cv2.WARP_INVERSE_MAP 
+    flags = base_flags+eval(radials[i]) + cv2.WARP_INVERSE_MAP
     rec = cv2.warpPolar(dst, dsize, center, maxRadius, flags)
- 
- 
+
+
     plt.subplot(3, 5, i+1)
     plt.imshow(src)
     plt.title('ori ' + radial)
