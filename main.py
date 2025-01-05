@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import cv2
 import numpy as np
 import sys
@@ -36,18 +37,38 @@ radials = ["cv2.WARP_POLAR_LINEAR",
            "cv2.WARP_POLAR_SQRT",
            "cv2.WARP_POLAR_SQUARE"]
 
+rec_list = []
+error_ssd_list = []
+radial_list = []
+min_val, max_val = 1e9, -1e9
 for i in range(5):
     flags = base_flags+eval(radials[i])
     radial = radials[i].split('_')[-1]
+    radial_list.append(radial)
 
     dst = cv2.warpPolar(src, dsize2, center, maxRadius, flags)
     cv2.imwrite(f"{filename_we}_{radial}.png", dst)
 
     flags = base_flags+eval(radials[i]) + cv2.WARP_INVERSE_MAP
     rec = cv2.warpPolar(dst, dsize, center2, maxRadius, flags)
+    rec_list.append(rec)
 
     error_ssd = (rec.astype(np.float64) - src.astype(np.float64))**2
-    error_ssd = np.mean(error_ssd, axis=2)
+    error_ssd_list.append(error_ssd)
+
+    min_val_cur, max_val_cur = error_ssd.min(), error_ssd.max()
+    min_val = min_val_cur if min_val_cur < min_val else min_val
+    max_val = max_val_cur if max_val_cur > max_val else max_val
+
+print(f"min_val={min_val} ; max_val={max_val}")
+
+for i in range(5):
+    print(f"\n{i})")
+    rec = rec_list[i]
+    error_ssd_ori = error_ssd_list[i]
+    radial = radial_list[i]
+
+    error_ssd = np.mean(error_ssd_ori, axis=2)
     error_ssd_mean = error_ssd.mean()
     print(f"error_ssd_mean={error_ssd_mean}")
 
@@ -78,8 +99,10 @@ for i in range(5):
     plt.axis('off')
 
     plt.subplot(4, 5, i+1+15)
-    # plt.imshow(error_ssd_uint8)
-    plt.imshow(error_ssd_uint8, cmap="jet")
+    # colormap = mpl.colormaps['viridis']
+    colormap = 'jet'
+    plt.imshow(error_ssd, cmap=colormap, vmin=min_val, vmax=max_val)
+    # plt.imshow(error_ssd_uint8, cmap="jet")
     text_kwargs = dict(ha='center', va='center', fontsize=6, color='C1')
     plt.text(0.1, 0.1, f"Mean error: {error_ssd_mean:.2f}", **text_kwargs)
     plt.title('rec ' + radial)
